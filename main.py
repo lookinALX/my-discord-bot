@@ -1,7 +1,14 @@
+import asyncio
+import config
 import webserver
 from lib.bot import bot
 
-VERSION = "0.0.2"
+VERSION = "0.0.4"
+
+
+async def main():
+    await bot.start(VERSION)
 
 webserver.keep_alive()
-bot.run(VERSION)
+
+asyncio.run(main())
