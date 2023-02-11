@@ -1,10 +1,11 @@
 from glob import glob
 
-from asyncio import sleep
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from discord import Intents, Embed
 from discord.ext.commands import Bot as BotBase
 from discord.ext.commands import CommandNotFound
+from ..db import db
+
 import os
 import telegram
 import config
@@ -23,6 +24,8 @@ class Bot(BotBase):
         self.ready = False
         self.guild = None
         self.scheduler = AsyncIOScheduler()
+
+        db.autosave(self.scheduler)
 
         super().__init__(
             command_prefix=PREFIX,
@@ -74,6 +77,7 @@ class Bot(BotBase):
     async def on_ready(self):
         if not self.ready:
             self.guild = self.get_guild(config.GUILD_ID)
+            self.scheduler.start()
 
             channel_status = self.get_channel(config.STATUS_CHANNEL)
             await channel_status.send("I'm now online!")
@@ -83,6 +87,14 @@ class Bot(BotBase):
             print(f"Guild: {self.guild}")
         else:
             print("bot reconnected")
+
+    async def on_message(self, message):
+        if message.channel.id in config.channelIDsToListen and not message.author.bot:
+            print(f'Message from {message.author}: {message.content}')
+            await TG.sendMessage(config.TEL_CHANNEL_ID, message.content)
+
+        if (message.channel.id == config.MAIN_CHAT_CHANNEL or message.channel.id == 1073957627463225454) and not message.author.bot:
+            await self.process_commands(message)
 
 
 bot = Bot()

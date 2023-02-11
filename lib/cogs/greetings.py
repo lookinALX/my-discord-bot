@@ -1,8 +1,6 @@
 from discord.ext.commands import Cog
 from discord import Embed
 
-import config
-
 
 def create_welcome_message(member):
     welcome_embed = Embed(title="Greetings my friend!", description=f'Добро пожаловать {member.mention}!'
@@ -24,15 +22,10 @@ class Greetings(Cog):
         self.bot = bot
 
     @Cog.listener()
-    async def on_ready(self):
-        print("TEST")
-
-    @Cog.listener()
     async def on_member_join(self, member):
         channel = member.guild.system_channel
         print(channel)
         if channel is not None:
-            await channel.send("HI")
             await channel.send(embed=create_welcome_message(member))
 
 
