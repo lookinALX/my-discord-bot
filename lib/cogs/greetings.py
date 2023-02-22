@@ -1,5 +1,7 @@
 from discord.ext.commands import Cog
 from discord import Embed
+from ..functions import sql
+from ..db import db
 
 
 def create_welcome_message(member):
@@ -27,6 +29,8 @@ class Greetings(Cog):
         print(channel)
         if channel is not None:
             await channel.send(embed=create_welcome_message(member))
+            sql.insert_ds_userid(member)
+            db.commit()
 
 
 async def setup(bot):

@@ -1,7 +1,7 @@
 from glob import glob
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from discord import Intents, Embed
+from discord import Intents
 from discord.ext.commands import Bot as BotBase
 from discord.ext.commands import CommandNotFound
 from ..db import db
@@ -9,6 +9,7 @@ from ..db import db
 import os
 import telegram
 import config
+import re
 
 PREFIX = "!"
 OWNER_IDS = [668042075031207947]
@@ -60,7 +61,7 @@ class Bot(BotBase):
         if err == "on_command_error":
             await args[0].send("Something went wrong.")
 
-        channel = self.get_channel(1071798085098934363)
+        channel = self.get_channel(config.STATUS_CHANNEL)
         await channel.send("An error occured")
         raise
 
@@ -90,8 +91,14 @@ class Bot(BotBase):
 
     async def on_message(self, message):
         if message.channel.id in config.channelIDsToListen and not message.author.bot:
-            print(f'Message from {message.author}: {message.content}')
-            await TG.sendMessage(config.TEL_CHANNEL_ID, message.content)
+            if "@everyone" in message.content:
+                print(f'Message from {message.author}: {message.content}')
+                new_message = re.sub('@everyone', '', message.content)
+                if new_message is not None:
+                    await TG.sendMessage(config.TEL_CHANNEL_ID, new_message)
+            else:
+                print(f'Message from {message.author}: {message.content}')
+                await TG.sendMessage(config.TEL_CHANNEL_ID, message.content)
 
         if (message.channel.id == config.MAIN_CHAT_CHANNEL or message.channel.id == 1073957627463225454) and not message.author.bot:
             await self.process_commands(message)
